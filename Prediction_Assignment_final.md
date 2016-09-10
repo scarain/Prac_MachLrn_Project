@@ -11,13 +11,13 @@ One thing that people regularly do is quantify how much of a particular activity
 
 
 ```r
-if (! file.exists("./project")) {dir.create("./project")}
+if (! file.exists("./data")) {dir.create("./data")}
 trainUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
-download.file(trainUrl, destfile = "./project/pml_training.csv")
-pmltrain = read.csv("./project/pml_training.csv")
+download.file(trainUrl, destfile = "./data/pml_training.csv")
+pmltrain = read.csv("./data/pml_training.csv")
 testUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
-download.file(testUrl, destfile = "./project/pml_testing.csv")
-pmltest = read.csv("./project/pml_testing.csv")
+download.file(testUrl, destfile = "./data/pml_testing.csv")
+pmltest = read.csv("./data/pml_testing.csv")
 ```
 
 ## 3. Preprocessing Data
@@ -25,17 +25,6 @@ After loading data into R, some preprocess are implemented to pick variables tha
 
 ```r
 library(caret)
-```
-
-```
-## Loading required package: lattice
-```
-
-```
-## Loading required package: ggplot2
-```
-
-```r
 dim(pmltrain)
 ```
 
@@ -93,23 +82,7 @@ testing = pmltrain[-inTrain,]
 
 ```r
 dtFit <- train(classe~.,data=training, method="rpart")
-```
-
-```
-## Loading required package: rpart
-```
-
-```r
 library(rattle)
-```
-
-```
-## Rattle: A free graphical interface for data mining with R.
-## XXXX 4.1.0 Copyright (c) 2006-2015 Togaware Pty Ltd.
-## 键入'rattle()'去轻摇、晃动、翻滚你的数据。
-```
-
-```r
 library(rpart.plot)
 fancyRpartPlot(dtFit$finalModel, sub = "")
 ```
@@ -161,32 +134,6 @@ dtAc
 ```r
 fitControl <-trainControl(method="cv", number=4, allowParallel=T, verbose=F)
 rfFit <-train(classe~.,data=training, method="rf", trControl=fitControl, verbose=F)
-```
-
-```
-## Loading required package: randomForest
-```
-
-```
-## randomForest 4.6-12
-```
-
-```
-## Type rfNews() to see new features/changes/bug fixes.
-```
-
-```
-## 
-## Attaching package: 'randomForest'
-```
-
-```
-## The following object is masked from 'package:ggplot2':
-## 
-##     margin
-```
-
-```r
 rfFit
 ```
 
@@ -257,44 +204,6 @@ rfAc
 
 ```r
 gbmFit <-train(classe~.,data=training, method="gbm", trControl=fitControl,verbose=F)
-```
-
-```
-## Loading required package: gbm
-```
-
-```
-## Loading required package: survival
-```
-
-```
-## 
-## Attaching package: 'survival'
-```
-
-```
-## The following object is masked from 'package:caret':
-## 
-##     cluster
-```
-
-```
-## Loading required package: splines
-```
-
-```
-## Loading required package: parallel
-```
-
-```
-## Loaded gbm 2.1.1
-```
-
-```
-## Loading required package: plyr
-```
-
-```r
 gbmFit
 ```
 
@@ -379,7 +288,7 @@ print(AcTable, type = "html", caption.placement = "top")
 ```
 
 <!-- html table generated in R 3.3.1 by xtable 1.8-2 package -->
-<!-- Sat Sep 10 20:18:26 2016 -->
+<!-- Sat Sep 10 22:28:01 2016 -->
 <table border=1>
 <caption align="top"> Model Accuracy Comparison </caption>
 <tr> <th>  </th> <th> Decision.Trees </th> <th> Random.Forest </th> <th> Boosted.Trees </th>  </tr>
@@ -398,39 +307,6 @@ print(AcTable, type = "html", caption.placement = "top")
 
 ```r
 library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:plyr':
-## 
-##     arrange, count, desc, failwith, id, mutate, rename, summarise,
-##     summarize
-```
-
-```
-## The following object is masked from 'package:randomForest':
-## 
-##     combine
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 pmltest <- select(pmltest, match(names(pmltrain[,-54]), names(pmltest)), problem_id)
 pml_rfPred <- predict(rfFit, pmltest)
 t2 <- matrix(nrow = 1, ncol = 20)
@@ -443,7 +319,7 @@ print(PredTable, type = "html")
 ```
 
 <!-- html table generated in R 3.3.1 by xtable 1.8-2 package -->
-<!-- Sat Sep 10 20:18:26 2016 -->
+<!-- Sat Sep 10 22:28:01 2016 -->
 <table border=1>
 <tr> <th>  </th> <th> 1 </th> <th> 2 </th> <th> 3 </th> <th> 4 </th> <th> 5 </th> <th> 6 </th> <th> 7 </th> <th> 8 </th> <th> 9 </th> <th> 10 </th> <th> 11 </th> <th> 12 </th> <th> 13 </th> <th> 14 </th> <th> 15 </th> <th> 16 </th> <th> 17 </th> <th> 18 </th> <th> 19 </th> <th> 20 </th>  </tr>
   <tr> <td align="center"> Prediction </td> <td align="center"> B </td> <td align="center"> A </td> <td align="center"> B </td> <td align="center"> A </td> <td align="center"> A </td> <td align="center"> E </td> <td align="center"> D </td> <td align="center"> B </td> <td align="center"> A </td> <td align="center"> A </td> <td align="center"> B </td> <td align="center"> C </td> <td align="center"> B </td> <td align="center"> A </td> <td align="center"> E </td> <td align="center"> E </td> <td align="center"> A </td> <td align="center"> B </td> <td align="center"> B </td> <td align="center"> B </td> </tr>

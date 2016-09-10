@@ -1,0 +1,125 @@
+---
+title: "Exercise Manner Prediction Assignment"
+author: "Yu Ye"
+date: "2016-09-10"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, message = FALSE)
+```
+
+## 1. Overview
+One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, my goal is to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise.
+
+## 2. Loading Data
+
+```{r loading}
+if (! file.exists("./data")) {dir.create("./data")}
+trainUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+download.file(trainUrl, destfile = "./data/pml_training.csv")
+pmltrain = read.csv("./data/pml_training.csv")
+testUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+download.file(testUrl, destfile = "./data/pml_testing.csv")
+pmltest = read.csv("./data/pml_testing.csv")
+```
+
+## 3. Preprocessing Data
+After loading data into R, some preprocess are implemented to pick variables that will be used in prediction models.
+```{r cleaning}
+library(caret)
+dim(pmltrain)
+#Removing the first 5 columns which record observation number, user name and timestamp.
+#These are not reasonable covariates for exercise classification.
+pmltrain <- pmltrain[,-(1:5)]
+#Removing zero covariates
+pmltrain <- pmltrain[,-nearZeroVar(pmltrain)]
+#Select the variables with percentage of NA values no more than a threshold.
+NAthreshold = 0.9
+naSelect <- apply(pmltrain, 2, function(x, a = NAthreshold) mean(is.na(x)) < a)
+pmltrain <- pmltrain[,naSelect]
+#Check no existance of NA.
+sum(is.na(pmltrain))
+ncol(pmltrain)
+pmltrain$classe <- as.factor(pmltrain$classe)
+```
+
+* 53 VAriables are left to be chosen as predictors after preprocessing.
+
+* Then the training set is randomly splited into a training set and a test set for cross validation.
+
+```{r partition}
+set.seed(123)
+inTrain = createDataPartition(pmltrain$classe, p = 3/4)[[1]]
+training = pmltrain[inTrain,]
+testing = pmltrain[-inTrain,]
+```
+
+## 4. Fitting Models
+
+* Here we try decision tree, random forest, and boosted trees to fit the data.
+
+### 4.1 Decision Tree Predictors
+```{r rpart}
+dtFit <- train(classe~.,data=training, method="rpart")
+library(rattle)
+library(rpart.plot)
+fancyRpartPlot(dtFit$finalModel, sub = "")
+dtPred <- predict(dtFit,testing)
+dtAc <- confusionMatrix(testing$classe, dtPred)
+dtAc
+```
+
+### 4.2 Random Forest Predictors
+```{r rf}
+fitControl <-trainControl(method="cv", number=4, allowParallel=T, verbose=F)
+rfFit <-train(classe~.,data=training, method="rf", trControl=fitControl, verbose=F)
+rfFit
+rfPred <- predict(rfFit,testing)
+rfAc <- confusionMatrix(testing$classe, rfPred)
+rfAc
+```
+
+* The optimal random forest model uses 27 variables as predictors. 
+
+### 4.3 Boosting Predictors
+```{r gbm}
+gbmFit <-train(classe~.,data=training, method="gbm", trControl=fitControl,verbose=F)
+gbmFit
+gbmPred <- predict(gbmFit,testing)
+gbmAc <- confusionMatrix(testing$classe, gbmPred)
+gbmAc
+```
+
+### 4.4 Accuracy Comparison
+```{r accuracy_comparison, results = "asis"}
+library(xtable)
+t1 <- data.frame(Decision.Trees = c(dtAc$overall['Accuracy'], 1-dtAc$overall['Accuracy']), Random.Forest = c(rfAc$overall['Accuracy'], 1-rfAc$overall['Accuracy']), Boosted.Trees = c(gbmAc$overall['Accuracy'], 1-gbmAc$overall['Accuracy']), row.names = c("Accuracy", "Estimated Out of Sample Error Rate"))
+AcTable <- xtable(t1, caption = "Model Accuracy Comparison", align = c(rep("c", 4)), digits = 4)
+print(AcTable, type = "html", caption.placement = "top")
+```
+
+
+* Given all above, decision tree results in low accuracy `r dtAc$overall['Accuracy']`, so it's not considered a suitable predicting model for this case.
+
+* Random forest and boosted trees are implemented with 4-folded cross-validated resampling. Both of these two models fit the training data well.
+
+* __Random forest performs the highest accuracy in testing set, the estimated out of sample error rate is 0.12%, so it's chosen as final model to predict the classe of the given official test set.__
+
+## 5. Predicting Official Test Set
+```{r test, results = "asis"}
+library(dplyr)
+pmltest <- select(pmltest, match(names(pmltrain[,-54]), names(pmltest)), problem_id)
+pml_rfPred <- predict(rfFit, pmltest)
+t2 <- matrix(nrow = 1, ncol = 20)
+t2 <- as.data.frame(t2)
+colnames(t2) <- pmltest$problem_id
+t2[1,] <- pml_rfPred
+row.names(t2) = "Prediction"
+PredTable <- xtable(t2, align = c(rep("c", 21)))
+print(PredTable, type = "html")
+```
+
+* Through _Course Project Prediction Quiz_, the random forest model is proved to predict all 20 official test samples correctly.
