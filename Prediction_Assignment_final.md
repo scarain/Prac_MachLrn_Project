@@ -25,6 +25,17 @@ After loading data into R, some preprocess are implemented to pick variables tha
 
 ```r
 library(caret)
+```
+
+```
+## Loading required package: lattice
+```
+
+```
+## Loading required package: ggplot2
+```
+
+```r
 dim(pmltrain)
 ```
 
@@ -82,7 +93,23 @@ testing = pmltrain[-inTrain,]
 
 ```r
 dtFit <- train(classe~.,data=training, method="rpart")
+```
+
+```
+## Loading required package: rpart
+```
+
+```r
 library(rattle)
+```
+
+```
+## Rattle: A free graphical interface for data mining with R.
+## XXXX 4.1.0 Copyright (c) 2006-2015 Togaware Pty Ltd.
+## 键入'rattle()'去轻摇、晃动、翻滚你的数据。
+```
+
+```r
 library(rpart.plot)
 fancyRpartPlot(dtFit$finalModel, sub = "")
 ```
@@ -134,6 +161,32 @@ dtAc
 ```r
 fitControl <-trainControl(method="cv", number=4, allowParallel=T, verbose=F)
 rfFit <-train(classe~.,data=training, method="rf", trControl=fitControl, verbose=F)
+```
+
+```
+## Loading required package: randomForest
+```
+
+```
+## randomForest 4.6-12
+```
+
+```
+## Type rfNews() to see new features/changes/bug fixes.
+```
+
+```
+## 
+## Attaching package: 'randomForest'
+```
+
+```
+## The following object is masked from 'package:ggplot2':
+## 
+##     margin
+```
+
+```r
 rfFit
 ```
 
@@ -146,13 +199,13 @@ rfFit
 ## 
 ## No pre-processing
 ## Resampling: Cross-Validated (4 fold) 
-## Summary of sample sizes: 11039, 11038, 11039, 11038 
+## Summary of sample sizes: 11039, 11039, 11038, 11038 
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy   Kappa    
-##    2    0.9938850  0.9922643
-##   27    0.9963991  0.9954452
-##   53    0.9936815  0.9920073
+##    2    0.9940209  0.9924364
+##   27    0.9966029  0.9957030
+##   53    0.9940889  0.9925228
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 27.
@@ -170,8 +223,8 @@ rfAc
 ##           Reference
 ## Prediction    A    B    C    D    E
 ##          A 1395    0    0    0    0
-##          B    1  947    1    0    0
-##          C    0    1  854    0    0
+##          B    1  948    0    0    0
+##          C    0    2  853    0    0
 ##          D    0    0    3  801    0
 ##          E    0    0    0    0  901
 ## 
@@ -188,14 +241,14 @@ rfAc
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9993   0.9989   0.9953   1.0000   1.0000
-## Specificity            1.0000   0.9995   0.9998   0.9993   1.0000
-## Pos Pred Value         1.0000   0.9979   0.9988   0.9963   1.0000
-## Neg Pred Value         0.9997   0.9997   0.9990   1.0000   1.0000
-## Prevalence             0.2847   0.1933   0.1750   0.1633   0.1837
-## Detection Rate         0.2845   0.1931   0.1741   0.1633   0.1837
+## Sensitivity            0.9993   0.9979   0.9965   1.0000   1.0000
+## Specificity            1.0000   0.9997   0.9995   0.9993   1.0000
+## Pos Pred Value         1.0000   0.9989   0.9977   0.9963   1.0000
+## Neg Pred Value         0.9997   0.9995   0.9993   1.0000   1.0000
+## Prevalence             0.2847   0.1937   0.1746   0.1633   0.1837
+## Detection Rate         0.2845   0.1933   0.1739   0.1633   0.1837
 ## Detection Prevalence   0.2845   0.1935   0.1743   0.1639   0.1837
-## Balanced Accuracy      0.9996   0.9992   0.9975   0.9996   1.0000
+## Balanced Accuracy      0.9996   0.9988   0.9980   0.9996   1.0000
 ```
 
 * The optimal random forest model uses 27 variables as predictors. 
@@ -204,6 +257,44 @@ rfAc
 
 ```r
 gbmFit <-train(classe~.,data=training, method="gbm", trControl=fitControl,verbose=F)
+```
+
+```
+## Loading required package: gbm
+```
+
+```
+## Loading required package: survival
+```
+
+```
+## 
+## Attaching package: 'survival'
+```
+
+```
+## The following object is masked from 'package:caret':
+## 
+##     cluster
+```
+
+```
+## Loading required package: splines
+```
+
+```
+## Loading required package: parallel
+```
+
+```
+## Loaded gbm 2.1.1
+```
+
+```
+## Loading required package: plyr
+```
+
+```r
 gbmFit
 ```
 
@@ -216,19 +307,19 @@ gbmFit
 ## 
 ## No pre-processing
 ## Resampling: Cross-Validated (4 fold) 
-## Summary of sample sizes: 11039, 11039, 11037, 11039 
+## Summary of sample sizes: 11040, 11038, 11039, 11037 
 ## Resampling results across tuning parameters:
 ## 
 ##   interaction.depth  n.trees  Accuracy   Kappa    
-##   1                   50      0.7583909  0.6934824
-##   1                  100      0.8297325  0.7844623
-##   1                  150      0.8711096  0.8368565
-##   2                   50      0.8844270  0.8536129
-##   2                  100      0.9375592  0.9210099
-##   2                  150      0.9634456  0.9537593
-##   3                   50      0.9308325  0.9124513
-##   3                  100      0.9726862  0.9654458
-##   3                  150      0.9870906  0.9836687
+##   1                   50      0.7615841  0.6975093
+##   1                  100      0.8312264  0.7863435
+##   1                  150      0.8715176  0.8373780
+##   2                   50      0.8849018  0.8542336
+##   2                  100      0.9388502  0.9226285
+##   2                  150      0.9639221  0.9543573
+##   3                   50      0.9342972  0.9168434
+##   3                  100      0.9724827  0.9651860
+##   3                  150      0.9851879  0.9812629
 ## 
 ## Tuning parameter 'shrinkage' was held constant at a value of 0.1
 ## 
@@ -250,32 +341,32 @@ gbmAc
 ##           Reference
 ## Prediction    A    B    C    D    E
 ##          A 1395    0    0    0    0
-##          B   12  929    7    1    0
-##          C    0   10  843    1    1
-##          D    0    8   13  781    2
-##          E    0    0    1   10  890
+##          B   11  925    9    4    0
+##          C    0   10  844    0    1
+##          D    0    8   14  781    1
+##          E    2    1    1    7  890
 ## 
 ## Overall Statistics
-##                                           
-##                Accuracy : 0.9865          
-##                  95% CI : (0.9829, 0.9896)
-##     No Information Rate : 0.2869          
-##     P-Value [Acc > NIR] : < 2.2e-16       
-##                                           
-##                   Kappa : 0.983           
-##  Mcnemar's Test P-Value : NA              
+##                                          
+##                Accuracy : 0.9859         
+##                  95% CI : (0.9822, 0.989)
+##     No Information Rate : 0.2871         
+##     P-Value [Acc > NIR] : < 2.2e-16      
+##                                          
+##                   Kappa : 0.9822         
+##  Mcnemar's Test P-Value : NA             
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9915   0.9810   0.9757   0.9849   0.9966
-## Specificity            1.0000   0.9949   0.9970   0.9944   0.9973
-## Pos Pred Value         1.0000   0.9789   0.9860   0.9714   0.9878
-## Neg Pred Value         0.9966   0.9954   0.9948   0.9971   0.9993
-## Prevalence             0.2869   0.1931   0.1762   0.1617   0.1821
-## Detection Rate         0.2845   0.1894   0.1719   0.1593   0.1815
+## Sensitivity            0.9908   0.9799   0.9724   0.9861   0.9978
+## Specificity            1.0000   0.9939   0.9973   0.9944   0.9973
+## Pos Pred Value         1.0000   0.9747   0.9871   0.9714   0.9878
+## Neg Pred Value         0.9963   0.9952   0.9941   0.9973   0.9995
+## Prevalence             0.2871   0.1925   0.1770   0.1615   0.1819
+## Detection Rate         0.2845   0.1886   0.1721   0.1593   0.1815
 ## Detection Prevalence   0.2845   0.1935   0.1743   0.1639   0.1837
-## Balanced Accuracy      0.9957   0.9880   0.9864   0.9896   0.9969
+## Balanced Accuracy      0.9954   0.9869   0.9848   0.9903   0.9975
 ```
 
 ### 4.4 Accuracy Comparison
@@ -288,12 +379,12 @@ print(AcTable, type = "html", caption.placement = "top")
 ```
 
 <!-- html table generated in R 3.3.1 by xtable 1.8-2 package -->
-<!-- Sat Sep 10 17:21:19 2016 -->
+<!-- Sat Sep 10 20:18:26 2016 -->
 <table border=1>
 <caption align="top"> Model Accuracy Comparison </caption>
 <tr> <th>  </th> <th> Decision.Trees </th> <th> Random.Forest </th> <th> Boosted.Trees </th>  </tr>
-  <tr> <td align="center"> Accuracy </td> <td align="center"> 0.4880 </td> <td align="center"> 0.9988 </td> <td align="center"> 0.9865 </td> </tr>
-  <tr> <td align="center"> Estimated Out of Sample Error Rate </td> <td align="center"> 0.5120 </td> <td align="center"> 0.0012 </td> <td align="center"> 0.0135 </td> </tr>
+  <tr> <td align="center"> Accuracy </td> <td align="center"> 0.4880 </td> <td align="center"> 0.9988 </td> <td align="center"> 0.9859 </td> </tr>
+  <tr> <td align="center"> Estimated Out of Sample Error Rate </td> <td align="center"> 0.5120 </td> <td align="center"> 0.0012 </td> <td align="center"> 0.0141 </td> </tr>
    </table>
 
 
@@ -307,6 +398,39 @@ print(AcTable, type = "html", caption.placement = "top")
 
 ```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:plyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize
+```
+
+```
+## The following object is masked from 'package:randomForest':
+## 
+##     combine
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 pmltest <- select(pmltest, match(names(pmltrain[,-54]), names(pmltest)), problem_id)
 pml_rfPred <- predict(rfFit, pmltest)
 t2 <- matrix(nrow = 1, ncol = 20)
@@ -319,7 +443,7 @@ print(PredTable, type = "html")
 ```
 
 <!-- html table generated in R 3.3.1 by xtable 1.8-2 package -->
-<!-- Sat Sep 10 16:33:37 2016 -->
+<!-- Sat Sep 10 20:18:26 2016 -->
 <table border=1>
 <tr> <th>  </th> <th> 1 </th> <th> 2 </th> <th> 3 </th> <th> 4 </th> <th> 5 </th> <th> 6 </th> <th> 7 </th> <th> 8 </th> <th> 9 </th> <th> 10 </th> <th> 11 </th> <th> 12 </th> <th> 13 </th> <th> 14 </th> <th> 15 </th> <th> 16 </th> <th> 17 </th> <th> 18 </th> <th> 19 </th> <th> 20 </th>  </tr>
   <tr> <td align="center"> Prediction </td> <td align="center"> B </td> <td align="center"> A </td> <td align="center"> B </td> <td align="center"> A </td> <td align="center"> A </td> <td align="center"> E </td> <td align="center"> D </td> <td align="center"> B </td> <td align="center"> A </td> <td align="center"> A </td> <td align="center"> B </td> <td align="center"> C </td> <td align="center"> B </td> <td align="center"> A </td> <td align="center"> E </td> <td align="center"> E </td> <td align="center"> A </td> <td align="center"> B </td> <td align="center"> B </td> <td align="center"> B </td> </tr>
